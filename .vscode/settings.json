@@ -1,0 +1,7 @@
+{
+    "python.analysis.extraPaths": [
+        "./modules/scanning",
+        "./modules/scanning",
+        "./modules/pass_generator"
+    ]
+}
