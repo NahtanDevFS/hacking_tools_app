@@ -2,6 +2,11 @@
     "python.analysis.extraPaths": [
         "./modules/scanning",
         "./modules/scanning",
-        "./modules/pass_generator"
+        "./modules/pass_generator",
+        "./modules/reconnaissance",
+        "./modules/scanning_virus",
+        "./modules/access_point",
+        "./modules/redirection",
+        "./modules/interception"
     ]
 }

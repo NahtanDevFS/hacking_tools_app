@@ -15,6 +15,8 @@ def perform_scan(ip_entry, ports_entry, results_text):
         ports = "1-1024"  # Escanear puertos comunes si no se especifica
 
     results_text.insert(tk.END, f"Escaneando {target} en los puertos {ports}...\n")
+    results_text.see(tk.END)  # Desplaza el texto automáticamente hacia abajo
+    results_text.update()  # Fuerza la actualización de la interfaz
     try:
         nm = nmap.PortScanner()
         nm.scan(target, ports)

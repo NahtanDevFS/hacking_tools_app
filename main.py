@@ -10,8 +10,22 @@ try:
     module_path = os.path.abspath(os.path.join("modules/scanning"))
     if module_path not in sys.path:
         sys.path.append(module_path)
-
     module_path = os.path.abspath(os.path.join("modules/pass_generator"))
+    if module_path not in sys.path:
+        sys.path.append(module_path)
+    module_path = os.path.abspath(os.path.join("modules/reconnaissance"))
+    if module_path not in sys.path:
+        sys.path.append(module_path)
+    module_path = os.path.abspath(os.path.join("modules/scanning_virus"))
+    if module_path not in sys.path:
+        sys.path.append(module_path)
+    module_path = os.path.abspath(os.path.join("modules/access_point"))
+    if module_path not in sys.path:
+        sys.path.append(module_path)
+    module_path = os.path.abspath(os.path.join("modules/redirection"))
+    if module_path not in sys.path:
+        sys.path.append(module_path)
+    module_path = os.path.abspath(os.path.join("modules/interception"))
     if module_path not in sys.path:
         sys.path.append(module_path)
 
@@ -19,40 +33,21 @@ try:
     from tkinter import ttk, scrolledtext
     from nmap_script import perform_scan
     from pass_gen import generate_password
+    from get_IP_net_devices import list_connected_devices
+    from scan_virus import scan_for_virus
+    from redirect_URL import response
+    from run_response import ejecutar_ettercap_en_hilo, ejecutar_mitmdump, parar_ettercap_en_hilo, parar_mitmdump
+    from start_server_fake_form import start_http_server_en_hilo, stop_http_server, actualizar_consola_http_server
+    from intercept_packages import start_intercept_packages
 except ModuleNotFoundError as e:
     print(e)
     exit(1)
 
 
-def get_local_ipv4():
-    try:
-        # Connect to an external server to determine the interface in use
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-            s.connect(("8.8.8.8", 80))  # 8.8.8.8 is Google's public DNS server
-            local_ip = s.getsockname()[0]
-        return local_ip
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
-
-# Función para listar dispositivos conectados a la red Wi-Fi
-def list_connected_devices():
-    devices_text.delete("1.0", tk.END)  # Limpiar el área de resultados
-    try:
-        nm = nmap.PortScanner()
-        local_ipv4 = get_local_ipv4()
-        subnet = f"{local_ipv4}/24"
-        devices_text.insert(tk.END, f"Escaneando dispositivos en la red {subnet}...\n")
-        nm.scan(hosts=subnet, arguments="-sn")
-        for host in nm.all_hosts():
-            devices_text.insert(tk.END, f"Host: {host} ({nm[host].hostname()}) - Estado: {nm[host].state()}\n")
-    except Exception as e:
-        devices_text.insert(tk.END, f"Error al escanear la red: {e}\n")
-
 # GUI principal
 root = tk.Tk()
 root.title("Aplicación para Hacking userFriendly")
-root.geometry("900x600")
+root.geometry("1200x600")
 root.configure(bg="black")  # Cambiar el fondo a gris oscuro
 
 # Crear estilos personalizados
@@ -69,49 +64,50 @@ notebook.pack(fill="both", expand=True)
 home_tab = ttk.Frame(notebook, style="TFrame")
 devices_tab = ttk.Frame(notebook, style="TFrame")
 scan_tab = ttk.Frame(notebook, style="TFrame")
-exploit_tab = ttk.Frame(notebook, style="TFrame")
-post_exploit_tab = ttk.Frame(notebook, style="TFrame")
+ettercap_tab = ttk.Frame(notebook, style="TFrame")
+mitmdump_tab = ttk.Frame(notebook, style="TFrame")
+intercept_data_network_tab = ttk.Frame(notebook, style="TFrame")
 #extra tabs
 pass_generator_tab = ttk.Frame(notebook, style="TFrame")
-pass_cracker_tab = ttk.Frame(notebook, style="TFrame")
-intercept_data_network_tab = ttk.Frame(notebook, style="TFrame")
+scan_virus_tab = ttk.Frame(notebook, style="TFrame")
 
 notebook.add(home_tab, text="Inicio")
 notebook.add(devices_tab, text="Escaneo Red")
 notebook.add(scan_tab, text="Escaneo Puertos")
-notebook.add(exploit_tab, text="Exploit")
-notebook.add(post_exploit_tab, text="Post-exploit")
+notebook.add(ettercap_tab, text="Iniciar-ettercap")
+notebook.add(mitmdump_tab, text="Iniciar-mitmdump")
+notebook.add(intercept_data_network_tab, text="interceptar trafico de red")
 notebook.add(pass_generator_tab, text="Gen-clave")
-notebook.add(pass_cracker_tab, text="Crack-clave")
-notebook.add(intercept_data_network_tab, text="interceptar datos de red")
+notebook.add(scan_virus_tab, text="Scan-archivo")
 
 # Contenido de la pestaña Inicio
 home_label = ttk.Label(home_tab, text="Bienvenido a tu aplicación de Hacking", font=("Arial", 16))
 home_label.pack(pady=20)
 
-scan_button = tk.Button(home_tab, text="Escanear puertos", command=lambda: notebook.select(scan_tab), width=30, bg="#303030", fg="#03bf00")
+devices_button = tk.Button(home_tab, text="Escanear Red", command=lambda: notebook.select(devices_tab), width=40, bg="#303030", fg="#03bf00")
+devices_button.pack(pady=10)
+
+scan_button = tk.Button(home_tab, text="Escanear puertos", command=lambda: notebook.select(scan_tab), width=40, bg="#303030", fg="#03bf00")
 scan_button.pack(pady=10)
 
-devices_button = tk.Button(home_tab, text="Escanear Red", command=lambda: notebook.select(devices_tab), width=30, bg="#303030", fg="#03bf00")
-devices_button.pack(pady=10)
+ettercap_button = tk.Button(home_tab, text="Ir a iniciar ettercap", command=lambda: notebook.select(ettercap_tab), width=40, bg="#303030", fg="#03bf00")
+ettercap_button.pack(pady=10)
 
-devices_button = tk.Button(home_tab, text="Iniciar exploit", command=lambda: notebook.select(exploit_tab), width=30, bg="#303030", fg="#03bf00")
-devices_button.pack(pady=10)
+mitmdump_button = tk.Button(home_tab, text="Ir a iniciar mitmdump", command=lambda: notebook.select(mitmdump_tab), width=40, bg="#303030", fg="#03bf00")
+mitmdump_button.pack(pady=10)
 
-devices_button = tk.Button(home_tab, text="Reporte post-exploit", command=lambda: notebook.select(post_exploit_tab), width=30, bg="#303030", fg="#03bf00")
-devices_button.pack(pady=10)
+intercept_data_button = tk.Button(home_tab, text="Interceptar tráfico en la Red", command=lambda: notebook.select(intercept_data_network_tab), width=40, bg="#303030", fg="#03bf00")
+intercept_data_button.pack(pady=10)
 
 extras_label = ttk.Label(home_tab, text="Extras", font=("Arial", 16))
 extras_label.pack(pady=20)
 
-devices_button = tk.Button(home_tab, text="Generador de contraseñas", command=lambda: notebook.select(pass_generator_tab), width=30, bg="#303030", fg="#03bf00")
-devices_button.pack(pady=10)
+generator_password_button = tk.Button(home_tab, text="Generador de contraseñas", command=lambda: notebook.select(pass_generator_tab), width=40, bg="#303030", fg="#03bf00")
+generator_password_button.pack(pady=10)
 
-devices_button = tk.Button(home_tab, text="Crack de fuerza bruta de contraseñas", command=lambda: notebook.select(pass_cracker_tab), width=30, bg="#303030", fg="#03bf00")
-devices_button.pack(pady=10)
+malware_scanner_button = tk.Button(home_tab, text="Escáneo de archivos para detectar malware", command=lambda: notebook.select(scan_virus_tab), width=40, bg="#303030", fg="#03bf00")
+malware_scanner_button.pack(pady=10)
 
-devices_button = tk.Button(home_tab, text="Interceptar datos compartidos en la Red", command=lambda: notebook.select(intercept_data_network_tab), width=30, bg="#303030", fg="#03bf00")
-devices_button.pack(pady=10)
 
 
 
@@ -149,7 +145,7 @@ devices_label = ttk.Label(devices_tab, text="Dispositivos Conectados a la Red Wi
 devices_label.pack(pady=10)
 
 # Botón para listar dispositivos
-list_devices_button = tk.Button(devices_tab, text="Listar Dispositivos", command=list_connected_devices, width=30, bg="#303030", fg="#03bf00")
+list_devices_button = tk.Button(devices_tab, text="Listar Dispositivos", command=lambda: list_connected_devices(devices_text), width=30, bg="#303030", fg="#03bf00")
 list_devices_button.pack(pady=10)
 
 # Área para mostrar los resultados
@@ -158,13 +154,74 @@ devices_text.pack(pady=5)
 
 
 
+#Contenido de la pestaña para iniciar ettercap
+ettercap_label = ttk.Label(ettercap_tab, text="Manejo de ettercap", font=("Arial", 16))
+ettercap_label.pack(pady=10)
+ettercap_ip_victim_label = ttk.Label(ettercap_tab, text="Introduce la IP de la víctima", font=("Arial", 16))
+ettercap_ip_victim_label.pack(pady=10)
+
+victim_ip_entry = tk.Entry(ettercap_tab, width=50, bg="#303030", fg="#03bf00")
+victim_ip_entry.pack(pady=5)
+start_ettercap_button = tk.Button(ettercap_tab, text="Iniciar ettercap", command=lambda: ejecutar_ettercap_en_hilo(ettercap_result_text, victim_ip_entry), width=30, bg="#303030", fg="#03bf00")
+start_ettercap_button.pack(pady=10)
+stop_ettercap_button = tk.Button(ettercap_tab, text="Parar ettercap", command=lambda: parar_ettercap_en_hilo(ettercap_result_text), width=30, bg="#303030", fg="#03bf00")
+stop_ettercap_button.pack(pady=10)
+ettercap_result_text = scrolledtext.ScrolledText(ettercap_tab, width=100, height=20, bg="#303030", fg="#03bf00", insertbackground="white")
+ettercap_result_text.pack(pady=5)
+
+
+
+
+#Contenido de la pestaña para iniciar mitmdump
+mitmdump_label = ttk.Label(mitmdump_tab, text="Manejo de mitmdump", font=("Arial", 16))
+mitmdump_label.pack(pady=10)
+start_mitmdump_button = tk.Button(mitmdump_tab, text="Iniciar mitmdump", command=lambda: ejecutar_mitmdump(mitmdump_result_text), width=30, bg="#303030", fg="#03bf00")
+start_mitmdump_button.pack(pady=10)
+start_mitmdump_button = tk.Button(mitmdump_tab, text="Parar mitmdump", command=lambda: parar_mitmdump(mitmdump_result_text), width=30, bg="#303030", fg="#03bf00")
+start_mitmdump_button.pack(pady=10)
+mitmdump_result_text = scrolledtext.ScrolledText(mitmdump_tab, width=100, height=20, bg="#303030", fg="#03bf00", insertbackground="white")
+mitmdump_result_text.pack(pady=5)
+
+
+
+#Contenido de la pestaña para iniciar la interceptacion
+interception_label = ttk.Label(intercept_data_network_tab, text="Manejo de intercepcion de trafico", font=("Arial", 16))
+interception_label.pack(pady=10)
+start_http_server_button = tk.Button(intercept_data_network_tab, text="Iniciar http server", command=lambda: start_http_server_en_hilo(http_server_result_text), width=30, bg="#303030", fg="#03bf00")
+start_http_server_button.pack(pady=10)
+stop_http_server_button = tk.Button(intercept_data_network_tab, text="detener http server", command=lambda: stop_http_server(http_server_result_text), width=30, bg="#303030", fg="#03bf00")
+stop_http_server_button.pack(pady=10)
+http_server_result_text = scrolledtext.ScrolledText(intercept_data_network_tab, width=120, height=12, bg="#303030", fg="#03bf00", insertbackground="white")
+http_server_result_text.pack(pady=5)
+
+start_interception_button = tk.Button(intercept_data_network_tab, text="Actualizar consola", command=lambda: actualizar_consola_http_server(http_server_result_text), width=30, bg="#303030", fg="#03bf00")
+start_interception_button.pack(pady=10)
+
+
 #Contenido de la pestaña del generador de contraseñas seguras
+pass_gen_label = ttk.Label(pass_generator_tab, text="Introduzca la longitud de la contraseña (longitud 12 recomendada)", font=("Arial", 16))
+pass_gen_label.pack(pady=10)
+pass_length_entry = tk.Entry(pass_generator_tab, width=20, bg="#303030", fg="#03bf00", font=("Arial", 16))
+pass_length_entry.pack(pady=10)
 pass_gen_label = ttk.Label(pass_generator_tab, text="Pulse el botón para crear una contraseña totalmente segura", font=("Arial", 16))
-pass_gen_label.pack(pady=30)
-list_devices_button = tk.Button(pass_generator_tab, text="Generar contraseña", command=lambda: generate_password(pass_entry), width=30, bg="#303030", fg="#03bf00")
-list_devices_button.pack(pady=50)
-pass_entry = tk.Entry(pass_generator_tab, width=20, bg="#303030", fg="#03bf00", font=("Arial", 16))
-pass_entry.pack(pady=30)
+pass_gen_label.pack(pady=10)
+list_devices_button = tk.Button(pass_generator_tab, text="Generar contraseña", command=lambda: generate_password(pass_entry, pass_length_entry), width=30, bg="#303030", fg="#03bf00")
+list_devices_button.pack(pady=10)
+pass_entry = tk.Entry(pass_generator_tab, width=50, bg="#303030", fg="#03bf00", font=("Arial", 14))
+pass_entry.pack(pady=20)
+
+
+
+#Contenido de la pestaña para escanear archivos maliciosos
+pass_gen_label = ttk.Label(scan_virus_tab, text="Introduzca la ruta del archivo que quiere analizar", font=("Arial", 16))
+pass_gen_label.pack(pady=10)
+file_path_entry = tk.Entry(scan_virus_tab, width=50, bg="#303030", fg="#03bf00", font=("Arial", 14))
+file_path_entry.pack(pady=20)
+exec_scan_button = tk.Button(scan_virus_tab, text="Realizar escaneo", command=lambda: scan_for_virus(file_path_entry, analisis_result_text), width=30, bg="#303030", fg="#03bf00")
+exec_scan_button.pack(pady=10)
+analisis_result_text = scrolledtext.ScrolledText(scan_virus_tab, width=80, height=20, bg="#303030", fg="#03bf00", insertbackground="white")
+analisis_result_text.pack(pady=5)
+
 
 # Iniciar la GUI
 root.mainloop()
