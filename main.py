@@ -7,27 +7,20 @@ import os
 import sys
 
 try:
-    module_path = os.path.abspath(os.path.join("modules/scanning"))
-    if module_path not in sys.path:
-        sys.path.append(module_path)
-    module_path = os.path.abspath(os.path.join("modules/pass_generator"))
-    if module_path not in sys.path:
-        sys.path.append(module_path)
-    module_path = os.path.abspath(os.path.join("modules/reconnaissance"))
-    if module_path not in sys.path:
-        sys.path.append(module_path)
-    module_path = os.path.abspath(os.path.join("modules/scanning_virus"))
-    if module_path not in sys.path:
-        sys.path.append(module_path)
-    module_path = os.path.abspath(os.path.join("modules/access_point"))
-    if module_path not in sys.path:
-        sys.path.append(module_path)
-    module_path = os.path.abspath(os.path.join("modules/redirection"))
-    if module_path not in sys.path:
-        sys.path.append(module_path)
-    module_path = os.path.abspath(os.path.join("modules/interception"))
-    if module_path not in sys.path:
-        sys.path.append(module_path)
+
+    modules = [
+        "modules/scanning",
+        "modules/pass_generator",
+        "modules/reconnaissance",
+        "modules/scanning_virus",
+        "modules/access_point",
+        "modules/redirection",
+        "modules/interception",
+    ]
+    for module in modules:
+        module_path = os.path.abspath(os.path.join(module))
+        if module_path not in sys.path:
+            sys.path.append(module_path)
 
     import tkinter as tk
     from tkinter import ttk, scrolledtext
@@ -35,10 +28,8 @@ try:
     from pass_gen import generate_password
     from get_IP_net_devices import list_connected_devices
     from scan_virus import scan_for_virus
-    from redirect_URL import response
     from run_response import ejecutar_ettercap_en_hilo, ejecutar_mitmdump, parar_ettercap_en_hilo, parar_mitmdump
     from start_server_fake_form import start_http_server_en_hilo, stop_http_server, actualizar_consola_http_server
-    from intercept_packages import start_intercept_packages
 except ModuleNotFoundError as e:
     print(e)
     exit(1)
@@ -67,7 +58,7 @@ scan_tab = ttk.Frame(notebook, style="TFrame")
 ettercap_tab = ttk.Frame(notebook, style="TFrame")
 mitmdump_tab = ttk.Frame(notebook, style="TFrame")
 intercept_data_network_tab = ttk.Frame(notebook, style="TFrame")
-#extra tabs
+# Pestañas extra
 pass_generator_tab = ttk.Frame(notebook, style="TFrame")
 scan_virus_tab = ttk.Frame(notebook, style="TFrame")
 

